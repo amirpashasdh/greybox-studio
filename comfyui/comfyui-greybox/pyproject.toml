@@ -1,0 +1,15 @@
+[project]
+name = "comfyui-greybox"
+description = "Load Greybox render packs (depth, pose, masks and clay previz from a 3D blockout) and fit them to MiniMax H3, LTX-2 or Wan VACE timing."
+version = "0.1.0"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/YOUR_GITHUB_USER/greybox-studio"
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "Greybox"
+Icon = ""

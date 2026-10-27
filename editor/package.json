@@ -1,0 +1,24 @@
+{
+  "name": "greybox-studio-editor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser blockout editor that turns a scene into depth, pose and mask passes for open video models.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@fontsource/barlow-semi-condensed": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "fflate": "^0.8.3",
+    "mediabunny": "^1.62.1",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.5"
+  }
+}

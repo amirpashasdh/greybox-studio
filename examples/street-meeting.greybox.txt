@@ -1,0 +1,23 @@
+# Street meeting: Two people meet mid-street. A wide establishing shot, then a cut to a half orbit.
+# Open with File > Open project or script in the editor.
+name "Street meeting"
+duration 9
+look "empty city street at dusk, wet asphalt, sodium street lights, cinematic"
+audio "distant traffic, footsteps on wet ground, no music"
+macro street id=st length=50 width=9 seed=4
+add mannequin a at=-3,0,-8 desc="a young woman in a red raincoat" yaw=20
+add mannequin b at=3,0,8 desc="an older man in a dark overcoat" yaw=200
+macro walk who=a path=-0.5,-0.7 t0=0 t1=4.5 end=talk
+macro walk who=b path=0.5,0.7 t0=0.3 t1=4.5 end=talk
+key a look t=4.6 b
+key b look t=4.6 a
+cam wide lens=24
+macro frame cam=wide target=0,1.2,0 size=wide angle=0 height=high
+set wide at=0,5,16
+cam close lens=40
+macro orbit cam=close target=a size=cowboy from=60 to=200 t0=4.5 t1=9
+cut t=0 wide ; t=4.5 close
+del cam1
+ref 1 a "the woman"
+ref 2 b "the man"
+ref 3 location "the street"

@@ -1,0 +1,1960 @@
+{
+ "id": "e3f2b845-8f2c-4b5a-9caf-eac1029d3e7e",
+ "revision": 0,
+ "last_node_id": 724,
+ "last_link_id": 1782,
+ "nodes": [
+  {
+   "id": 116,
+   "type": "MarkdownNote",
+   "pos": [
+    -2020,
+    4870
+   ],
+   "size": [
+    460,
+    1310
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "title": "Note: MiniMax H3 Fun ControlNet",
+   "properties": {},
+   "widgets_values": [
+    "## MiniMax H3 Fun ControlNet-Union\n\n[MiniMax-H3-Fun-Controlnet-Union](https://huggingface.co/alibaba-pai/MiniMax-H3-Fun-Controlnet-Union) is a single ControlNet-Union branch trained with VideoX-Fun. One checkpoint conditions MiniMax H3 on **Canny, Depth, HED, MLSD, or Pose** control video, and also runs **video inpainting**. Load it on top of a MiniMax H3 transformer (`fl2va` or `ref2va`).\n\nPackaged weights: [🤗 Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3) (`minimax_h3_fun_controlnet_union_pruned_int8_convrot.safetensors`).\n\n## ComfyUI links\n- [ComfyUI#15224](https://github.com/Comfy-Org/ComfyUI/pull/15224) (MiniMax H3)\n- [ComfyUI#15975](https://github.com/Comfy-Org/ComfyUI/pull/15975) (Fun ControlNet as model patch)\n- [🤗 alibaba-pai/MiniMax-H3-Fun-Controlnet-Union](https://huggingface.co/alibaba-pai/MiniMax-H3-Fun-Controlnet-Union)\n- [🤗 Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3)\n\n## About this workflow\n\nThis graph is a **Pose control** example only. The Union checkpoint can take Canny / Depth / HED / MLSD or an inpaint mask as well, but those paths are not wired here.\n\n**What this graph does**\n\n1. **Load Video (Control Video)** reads `dancer_field_pose.mp4`. Optional **Video Slice** trims the clip.\n2. **SDPose Video Pose Extractor [Multi-Person]** detects people and draws whole-body skeletons (body, hands, face, feet). That skeleton sequence is the control video, not the raw RGB footage.\n3. **Preview Image** shows the pose frames, then feeds them into **Apply MiniMax H3 Fun ControlNet** as `control_video`.\n4. **MiniMax H3 Reference to Video** builds text conditioning and the joint audio+video latent. In this demo the `ref_*` slots are empty, so the run is text-to-video locked to the pose. You can still attach reference images, videos, or audio if you want identity or voice lock on top of the control.\n5. Sampling and decode stay the same as other H3 templates: joint latent → video VAE + audio VAE → muxed MP4.\n\n**Apply MiniMax H3 Fun ControlNet**\n\n- **model_patch**: Fun ControlNet-Union from **ModelPatchLoader**\n- **vae**: MiniMax H3 **video** VAE (used to encode the control frames)\n- **control_video**: preprocessed frames. This template uses SDPose skeletons\n- **mask** / **source_video**: leave empty here. `mask` (1 = regenerate) plus optional `source_video` is the inpaint path\n- **strength**: how hard the control skip is added (same role as `control_context_scale` on the original model). `1.0` is strongest and is what this graph uses. Values below `1.0` loosen the pose. `0` turns the branch off\n- **start_percent** / **end_percent**: which part of sampling the control is active (`0` → `1` here)\n\n**Length and size**\n\n- Frames snap to the video VAE grid `17n + 5` at 24fps. This template uses **5s → 124 frames**. Cap is about 15 seconds\n- A control clip longer than `length` is taken from the start. A shorter clip holds its last frame\n- To match the control video length, use the bypassed group and wire `batch_size` into **MiniMax H3 Reference to Video** `length`\n\n**Prompt**\n\n[Guide here](https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/VIDEO_PROMPT_WRITING_GUIDE_ref_en.md)\n\n**Using the other Union modes**\n\nKeep **Apply MiniMax H3 Fun ControlNet** and swap only the preprocessor that writes `control_video`:\n\n- **Canny**: Detect Edges\n- **Depth**: Depth Anything 3 or MoGe\n- **Pose**: this graph (SDPose), or SAM3D Body\n- **HED / MLSD**: no built-in preprocessor; use a community pack if you need them\n- **Inpaint**: connect `mask` and optional `source_video`. `control_video` can stay empty or add extra structure\n\nSee the **Preparing the control video** note for official preprocessor tutorials.\n"
+   ],
+   "widgets_values_named": {
+    "text": "## MiniMax H3 Fun ControlNet-Union\n\n[MiniMax-H3-Fun-Controlnet-Union](https://huggingface.co/alibaba-pai/MiniMax-H3-Fun-Controlnet-Union) is a single ControlNet-Union branch trained with VideoX-Fun. One checkpoint conditions MiniMax H3 on **Canny, Depth, HED, MLSD, or Pose** control video, and also runs **video inpainting**. Load it on top of a MiniMax H3 transformer (`fl2va` or `ref2va`).\n\nPackaged weights: [🤗 Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3) (`minimax_h3_fun_controlnet_union_pruned_int8_convrot.safetensors`).\n\n## ComfyUI links\n- [ComfyUI#15224](https://github.com/Comfy-Org/ComfyUI/pull/15224) (MiniMax H3)\n- [ComfyUI#15975](https://github.com/Comfy-Org/ComfyUI/pull/15975) (Fun ControlNet as model patch)\n- [🤗 alibaba-pai/MiniMax-H3-Fun-Controlnet-Union](https://huggingface.co/alibaba-pai/MiniMax-H3-Fun-Controlnet-Union)\n- [🤗 Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3)\n\n## About this workflow\n\nThis graph is a **Pose control** example only. The Union checkpoint can take Canny / Depth / HED / MLSD or an inpaint mask as well, but those paths are not wired here.\n\n**What this graph does**\n\n1. **Load Video (Control Video)** reads `dancer_field_pose.mp4`. Optional **Video Slice** trims the clip.\n2. **SDPose Video Pose Extractor [Multi-Person]** detects people and draws whole-body skeletons (body, hands, face, feet). That skeleton sequence is the control video, not the raw RGB footage.\n3. **Preview Image** shows the pose frames, then feeds them into **Apply MiniMax H3 Fun ControlNet** as `control_video`.\n4. **MiniMax H3 Reference to Video** builds text conditioning and the joint audio+video latent. In this demo the `ref_*` slots are empty, so the run is text-to-video locked to the pose. You can still attach reference images, videos, or audio if you want identity or voice lock on top of the control.\n5. Sampling and decode stay the same as other H3 templates: joint latent → video VAE + audio VAE → muxed MP4.\n\n**Apply MiniMax H3 Fun ControlNet**\n\n- **model_patch**: Fun ControlNet-Union from **ModelPatchLoader**\n- **vae**: MiniMax H3 **video** VAE (used to encode the control frames)\n- **control_video**: preprocessed frames. This template uses SDPose skeletons\n- **mask** / **source_video**: leave empty here. `mask` (1 = regenerate) plus optional `source_video` is the inpaint path\n- **strength**: how hard the control skip is added (same role as `control_context_scale` on the original model). `1.0` is strongest and is what this graph uses. Values below `1.0` loosen the pose. `0` turns the branch off\n- **start_percent** / **end_percent**: which part of sampling the control is active (`0` → `1` here)\n\n**Length and size**\n\n- Frames snap to the video VAE grid `17n + 5` at 24fps. This template uses **5s → 124 frames**. Cap is about 15 seconds\n- A control clip longer than `length` is taken from the start. A shorter clip holds its last frame\n- To match the control video length, use the bypassed group and wire `batch_size` into **MiniMax H3 Reference to Video** `length`\n\n**Prompt**\n\n[Guide here](https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/VIDEO_PROMPT_WRITING_GUIDE_ref_en.md)\n\n**Using the other Union modes**\n\nKeep **Apply MiniMax H3 Fun ControlNet** and swap only the preprocessor that writes `control_video`:\n\n- **Canny**: Detect Edges\n- **Depth**: Depth Anything 3 or MoGe\n- **Pose**: this graph (SDPose), or SAM3D Body\n- **HED / MLSD**: no built-in preprocessor; use a community pack if you need them\n- **Inpaint**: connect `mask` and optional `source_video`. `control_video` can stay empty or add extra structure\n\nSee the **Preparing the control video** note for official preprocessor tutorials.\n"
+   },
+   "color": "#222",
+   "bgcolor": "#000"
+  },
+  {
+   "id": 117,
+   "type": "MarkdownNote",
+   "pos": [
+    -2500,
+    4870
+   ],
+   "size": [
+    440,
+    1060
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "title": "Note: Model Links",
+   "properties": {},
+   "widgets_values": [
+    "## Input Asset\n\n- [dancer_field_pose.mp4](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/dancer_field_pose.mp4)\n\n## Model Links\n\n- [Hugging Face:Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3)\n- [ModelScope:Comfy-Org/MiniMax-H3](https://modelscope.cn/models/Comfy-Org/MiniMax-H3)\n- [Hugging Face:Comfy-Org/SDPose](https://huggingface.co/Comfy-Org/SDPose)\n- [ModelScope:Comfy-Org/SDPose](https://modelscope.cn/models/Comfy-Org/SDPose)\n\n**vae**\n\n- [minimax_h3_video_vae_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_int8_convrot.safetensors) (2.62 GB)\n- [minimax_h3_audio_vae_fp32.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors) (577.2 MB)\n\n**diffusion_models**\n\n- [minimax_h3_ref2va_pruned_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors) (19.53 GB)\n- [rt_detr_v4-x-hgnet_fp16.safetensors](https://huggingface.co/Comfy-Org/SDPose/resolve/main/diffusion_models/rt_detr_v4-x-hgnet_fp16.safetensors) (118.2 MB)\n\n**text_encoders**\n\n- [qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors) (14.61 GB)\n\n**loras**\n\n- [minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/loras/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors) (1.82 GB)\n\n**model_patches**\n\n- [minimax_h3_fun_controlnet_union_pruned_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/model_patches/minimax_h3_fun_controlnet_union_pruned_int8_convrot.safetensors) (2.14 GB)\n\n**checkpoints**\n\n- [sdpose_wholebody_fp16.safetensors](https://huggingface.co/Comfy-Org/SDPose/resolve/main/checkpoints/sdpose_wholebody_fp16.safetensors) (1.79 GB)\n\n\n## Model Storage Location\n\n```\n📂 ComfyUI/\n├── 📂 models/\n│   ├── 📂 vae/\n│   │   ├── minimax_h3_video_vae_int8_convrot.safetensors\n│   │   └── minimax_h3_audio_vae_fp32.safetensors\n│   ├── 📂 diffusion_models/\n│   │   ├── minimax_h3_ref2va_pruned_int8_convrot.safetensors\n│   │   └── rt_detr_v4-x-hgnet_fp16.safetensors\n│   ├── 📂 text_encoders/\n│   │   └── qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors\n│   ├── 📂 loras/\n│   │   └── minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors\n│   ├── 📂 model_patches/\n│   │   └── minimax_h3_fun_controlnet_union_pruned_int8_convrot.safetensors\n│   └── 📂 checkpoints/\n│       └── sdpose_wholebody_fp16.safetensors\n```\n\n## Report Issue\n\nNote: Please update ComfyUI first ([guide](https://docs.comfy.org/installation/update_comfyui)) and prepare required models. Desktop/Cloud updates follow stable releases, so some nightly-supported models may not be available yet.\n\n- Cannot run / runtime errors: [ComfyUI/issues](https://github.com/comfyanonymous/ComfyUI/issues)\n- UI / frontend issues: [ComfyUI_frontend/issues](https://github.com/Comfy-Org/ComfyUI_frontend/issues)\n- Workflow issues: [workflow_templates/issues](https://github.com/Comfy-Org/workflow_templates/issues)\n"
+   ],
+   "widgets_values_named": {
+    "text": "## Input Asset\n\n- [dancer_field_pose.mp4](https://raw.githubusercontent.com/Comfy-Org/workflow_templates/refs/heads/main/input/dancer_field_pose.mp4)\n\n## Model Links\n\n- [Hugging Face:Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3)\n- [ModelScope:Comfy-Org/MiniMax-H3](https://modelscope.cn/models/Comfy-Org/MiniMax-H3)\n- [Hugging Face:Comfy-Org/SDPose](https://huggingface.co/Comfy-Org/SDPose)\n- [ModelScope:Comfy-Org/SDPose](https://modelscope.cn/models/Comfy-Org/SDPose)\n\n**vae**\n\n- [minimax_h3_video_vae_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_int8_convrot.safetensors) (2.62 GB)\n- [minimax_h3_audio_vae_fp32.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors) (577.2 MB)\n\n**diffusion_models**\n\n- [minimax_h3_ref2va_pruned_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors) (19.53 GB)\n- [rt_detr_v4-x-hgnet_fp16.safetensors](https://huggingface.co/Comfy-Org/SDPose/resolve/main/diffusion_models/rt_detr_v4-x-hgnet_fp16.safetensors) (118.2 MB)\n\n**text_encoders**\n\n- [qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors) (14.61 GB)\n\n**loras**\n\n- [minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/loras/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors) (1.82 GB)\n\n**model_patches**\n\n- [minimax_h3_fun_controlnet_union_pruned_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/model_patches/minimax_h3_fun_controlnet_union_pruned_int8_convrot.safetensors) (2.14 GB)\n\n**checkpoints**\n\n- [sdpose_wholebody_fp16.safetensors](https://huggingface.co/Comfy-Org/SDPose/resolve/main/checkpoints/sdpose_wholebody_fp16.safetensors) (1.79 GB)\n\n\n## Model Storage Location\n\n```\n📂 ComfyUI/\n├── 📂 models/\n│   ├── 📂 vae/\n│   │   ├── minimax_h3_video_vae_int8_convrot.safetensors\n│   │   └── minimax_h3_audio_vae_fp32.safetensors\n│   ├── 📂 diffusion_models/\n│   │   ├── minimax_h3_ref2va_pruned_int8_convrot.safetensors\n│   │   └── rt_detr_v4-x-hgnet_fp16.safetensors\n│   ├── 📂 text_encoders/\n│   │   └── qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors\n│   ├── 📂 loras/\n│   │   └── minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors\n│   ├── 📂 model_patches/\n│   │   └── minimax_h3_fun_controlnet_union_pruned_int8_convrot.safetensors\n│   └── 📂 checkpoints/\n│       └── sdpose_wholebody_fp16.safetensors\n```\n\n## Report Issue\n\nNote: Please update ComfyUI first ([guide](https://docs.comfy.org/installation/update_comfyui)) and prepare required models. Desktop/Cloud updates follow stable releases, so some nightly-supported models may not be available yet.\n\n- Cannot run / runtime errors: [ComfyUI/issues](https://github.com/comfyanonymous/ComfyUI/issues)\n- UI / frontend issues: [ComfyUI_frontend/issues](https://github.com/Comfy-Org/ComfyUI_frontend/issues)\n- Workflow issues: [workflow_templates/issues](https://github.com/Comfy-Org/workflow_templates/issues)\n"
+   },
+   "color": "#222",
+   "bgcolor": "#000"
+  },
+  {
+   "id": 119,
+   "type": "VAELoader",
+   "pos": [
+    -1500,
+    5440
+   ],
+   "size": [
+    650,
+    70
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "VAE",
+     "type": "VAE",
+     "links": [
+      251,
+      273,
+      339
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAELoader",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "models": [
+     {
+      "name": "minimax_h3_video_vae_int8_convrot.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_int8_convrot.safetensors",
+      "directory": "vae"
+     }
+    ]
+   },
+   "widgets_values": [
+    "minimax_h3_video_vae_int8_convrot.safetensors"
+   ],
+   "widgets_values_named": {
+    "vae_name": "minimax_h3_video_vae_int8_convrot.safetensors"
+   }
+  },
+  {
+   "id": 120,
+   "type": "VAELoader",
+   "pos": [
+    -1500,
+    5570
+   ],
+   "size": [
+    650,
+    70
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "VAE",
+     "type": "VAE",
+     "links": [
+      250,
+      274
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAELoader",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "models": [
+     {
+      "name": "minimax_h3_audio_vae_fp32.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors",
+      "directory": "vae"
+     }
+    ]
+   },
+   "widgets_values": [
+    "minimax_h3_audio_vae_fp32.safetensors"
+   ],
+   "widgets_values_named": {
+    "vae_name": "minimax_h3_audio_vae_fp32.safetensors"
+   }
+  },
+  {
+   "id": 121,
+   "type": "VAEDecodeAudio",
+   "pos": [
+    530,
+    5740
+   ],
+   "size": [
+    230,
+    60
+   ],
+   "flags": {
+    "collapsed": false
+   },
+   "order": 36,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 281
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 250
+    }
+   ],
+   "outputs": [
+    {
+     "name": "AUDIO",
+     "type": "AUDIO",
+     "links": [
+      259
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEDecodeAudio",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   }
+  },
+  {
+   "id": 122,
+   "type": "VAEDecode",
+   "pos": [
+    530,
+    5640
+   ],
+   "size": [
+    230,
+    60
+   ],
+   "flags": {
+    "collapsed": false
+   },
+   "order": 35,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 280
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 251
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      258
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEDecode",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   }
+  },
+  {
+   "id": 123,
+   "type": "KSamplerSelect",
+   "pos": [
+    510,
+    5190
+   ],
+   "size": [
+    370,
+    70
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "SAMPLER",
+     "type": "SAMPLER",
+     "links": [
+      255
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "KSamplerSelect",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   },
+   "widgets_values": [
+    "res_multistep"
+   ],
+   "widgets_values_named": {
+    "sampler_name": "res_multistep"
+   }
+  },
+  {
+   "id": 124,
+   "type": "BasicScheduler",
+   "pos": [
+    510,
+    5310
+   ],
+   "size": [
+    370,
+    130
+   ],
+   "flags": {},
+   "order": 32,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 341
+    },
+    {
+     "name": "steps",
+     "type": "INT",
+     "widget": {
+      "name": "steps"
+     },
+     "link": 289
+    }
+   ],
+   "outputs": [
+    {
+     "name": "SIGMAS",
+     "type": "SIGMAS",
+     "links": [
+      256
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "BasicScheduler",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   },
+   "widgets_values": [
+    "simple",
+    20,
+    1
+   ],
+   "widgets_values_named": {
+    "scheduler": "simple",
+    "steps": 20,
+    "denoise": 1
+   }
+  },
+  {
+   "id": 125,
+   "type": "SamplerCustomAdvanced",
+   "pos": [
+    920,
+    5110
+   ],
+   "size": [
+    230,
+    140
+   ],
+   "flags": {},
+   "order": 34,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "noise",
+     "type": "NOISE",
+     "link": 253
+    },
+    {
+     "name": "guider",
+     "type": "GUIDER",
+     "link": 254
+    },
+    {
+     "name": "sampler",
+     "type": "SAMPLER",
+     "link": 255
+    },
+    {
+     "name": "sigmas",
+     "type": "SIGMAS",
+     "link": 256
+    },
+    {
+     "name": "latent_image",
+     "type": "LATENT",
+     "link": 271
+    }
+   ],
+   "outputs": [
+    {
+     "name": "output",
+     "type": "LATENT",
+     "links": [
+      280,
+      281
+     ]
+    },
+    {
+     "name": "denoised_output",
+     "type": "LATENT",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SamplerCustomAdvanced",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   }
+  },
+  {
+   "id": 126,
+   "type": "BasicGuider",
+   "pos": [
+    510,
+    5080
+   ],
+   "size": [
+    360,
+    60
+   ],
+   "flags": {},
+   "order": 33,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 342
+    },
+    {
+     "name": "conditioning",
+     "type": "CONDITIONING",
+     "link": 337
+    }
+   ],
+   "outputs": [
+    {
+     "name": "GUIDER",
+     "type": "GUIDER",
+     "links": [
+      254
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "BasicGuider",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   }
+  },
+  {
+   "id": 127,
+   "type": "UNETLoader",
+   "pos": [
+    -1500,
+    4960
+   ],
+   "size": [
+    650,
+    90
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      285,
+      287
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "UNETLoader",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "models": [
+     {
+      "name": "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+      "directory": "diffusion_models"
+     }
+    ]
+   },
+   "widgets_values": [
+    "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+    "default"
+   ],
+   "widgets_values_named": {
+    "unet_name": "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+    "weight_dtype": "default"
+   }
+  },
+  {
+   "id": 128,
+   "type": "CLIPLoader",
+   "pos": [
+    -1500,
+    5260
+   ],
+   "size": [
+    650,
+    120
+   ],
+   "flags": {},
+   "order": 7,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "CLIP",
+     "type": "CLIP",
+     "links": [
+      272
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CLIPLoader",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "models": [
+     {
+      "name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "directory": "text_encoders"
+     }
+    ]
+   },
+   "widgets_values": [
+    "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+    "minimax",
+    "default"
+   ],
+   "widgets_values_named": {
+    "clip_name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+    "type": "minimax",
+    "device": "default"
+   }
+  },
+  {
+   "id": 129,
+   "type": "RandomNoise",
+   "pos": [
+    510,
+    4940
+   ],
+   "size": [
+    360,
+    90
+   ],
+   "flags": {},
+   "order": 8,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "NOISE",
+     "type": "NOISE",
+     "links": [
+      253
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "RandomNoise",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   },
+   "widgets_values": [
+    1086599926715797,
+    "randomize"
+   ],
+   "widgets_values_named": {
+    "noise_seed": 1086599926715797,
+    "control_after_generate": "randomize"
+   }
+  },
+  {
+   "id": 130,
+   "type": "CreateVideo",
+   "pos": [
+    840,
+    5640
+   ],
+   "size": [
+    270,
+    140
+   ],
+   "flags": {},
+   "order": 37,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 258
+    },
+    {
+     "name": "audio",
+     "shape": 7,
+     "type": "AUDIO",
+     "link": 259
+    }
+   ],
+   "outputs": [
+    {
+     "name": "VIDEO",
+     "type": "VIDEO",
+     "links": [
+      1767
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CreateVideo",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   },
+   "widgets_values": [
+    24,
+    "auto",
+    "sRGB"
+   ],
+   "widgets_values_named": {
+    "fps": 24,
+    "bit_depth": "auto",
+    "color_space": "sRGB"
+   }
+  },
+  {
+   "id": 136,
+   "type": "MiniMaxH3ReferenceToVideo",
+   "pos": [
+    -600,
+    4940
+   ],
+   "size": [
+    400,
+    340
+   ],
+   "flags": {},
+   "order": 26,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip",
+     "type": "CLIP",
+     "link": 272
+    },
+    {
+     "name": "vae",
+     "shape": 7,
+     "type": "VAE",
+     "link": 273
+    },
+    {
+     "name": "audio_vae",
+     "shape": 7,
+     "type": "VAE",
+     "link": 274
+    },
+    {
+     "label": "ref_image_0",
+     "name": "ref_images.ref_image_0",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 1781
+    },
+    {
+     "label": "ref_video_0",
+     "name": "ref_videos.ref_video_0",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "label": "ref_video_audio_0",
+     "name": "ref_video_audios.ref_video_audio_0",
+     "shape": 7,
+     "type": "AUDIO",
+     "link": null
+    },
+    {
+     "label": "ref_audio_0",
+     "name": "ref_audios.ref_audio_0",
+     "shape": 7,
+     "type": "AUDIO",
+     "link": null
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "widget": {
+      "name": "prompt"
+     },
+     "link": 1777
+    },
+    {
+     "name": "width",
+     "type": "INT",
+     "widget": {
+      "name": "width"
+     },
+     "link": 1779
+    },
+    {
+     "name": "height",
+     "type": "INT",
+     "widget": {
+      "name": "height"
+     },
+     "link": 1780
+    },
+    {
+     "name": "length",
+     "type": "INT",
+     "widget": {
+      "name": "length"
+     },
+     "link": 1778
+    },
+    {
+     "name": "ref_images.ref_image_1",
+     "type": "IMAGE",
+     "link": 1782,
+     "label": "ref_image_1",
+     "shape": 7
+    }
+   ],
+   "outputs": [
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "links": [
+      337
+     ]
+    },
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      271
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3ReferenceToVideo",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   },
+   "widgets_values": [
+    "",
+    1344,
+    768,
+    124,
+    "match"
+   ],
+   "widgets_values_named": {
+    "prompt": "",
+    "width": 1344,
+    "height": 768,
+    "length": 124,
+    "ref_image_size": "match"
+   },
+   "color": "#322",
+   "bgcolor": "#533"
+  },
+  {
+   "id": 141,
+   "type": "ComfySwitchNode",
+   "pos": [
+    -740,
+    5410
+   ],
+   "size": [
+    270,
+    110
+   ],
+   "flags": {},
+   "order": 25,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "on_false",
+     "shape": 7,
+     "type": "MODEL",
+     "link": 287
+    },
+    {
+     "name": "on_true",
+     "shape": 7,
+     "type": "MODEL",
+     "link": 286
+    },
+    {
+     "name": "switch",
+     "type": "BOOLEAN",
+     "widget": {
+      "name": "switch"
+     },
+     "link": 290
+    }
+   ],
+   "outputs": [
+    {
+     "name": "output",
+     "type": "MODEL",
+     "links": [
+      340
+     ]
+    }
+   ],
+   "title": "If/Else Switch (model)",
+   "properties": {
+    "Node name for S&R": "ComfySwitchNode",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   },
+   "widgets_values": [
+    false
+   ],
+   "widgets_values_named": {
+    "switch": false
+   }
+  },
+  {
+   "id": 142,
+   "type": "ComfySwitchNode",
+   "pos": [
+    -400,
+    5570
+   ],
+   "size": [
+    270,
+    110
+   ],
+   "flags": {},
+   "order": 23,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "on_false",
+     "shape": 7,
+     "type": "INT",
+     "link": 284
+    },
+    {
+     "name": "on_true",
+     "shape": 7,
+     "type": "INT",
+     "link": 283
+    },
+    {
+     "name": "switch",
+     "type": "BOOLEAN",
+     "widget": {
+      "name": "switch"
+     },
+     "link": 291
+    }
+   ],
+   "outputs": [
+    {
+     "name": "output",
+     "type": "INT",
+     "links": [
+      289
+     ]
+    }
+   ],
+   "title": "If/Else Switch (Steps)",
+   "properties": {
+    "Node name for S&R": "ComfySwitchNode",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   },
+   "widgets_values": [
+    false
+   ],
+   "widgets_values_named": {
+    "switch": false
+   }
+  },
+  {
+   "id": 143,
+   "type": "PrimitiveInt",
+   "pos": [
+    -740,
+    5580
+   ],
+   "size": [
+    270,
+    90
+   ],
+   "flags": {},
+   "order": 12,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "INT",
+     "type": "INT",
+     "links": [
+      284
+     ]
+    }
+   ],
+   "title": "Int (Full)",
+   "properties": {
+    "Node name for S&R": "PrimitiveInt",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   },
+   "widgets_values": [
+    20,
+    "fixed"
+   ],
+   "widgets_values_named": {
+    "value": 20,
+    "fixed": "fixed"
+   }
+  },
+  {
+   "id": 144,
+   "type": "PrimitiveInt",
+   "pos": [
+    -740,
+    5730
+   ],
+   "size": [
+    270,
+    90
+   ],
+   "flags": {},
+   "order": 13,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "INT",
+     "type": "INT",
+     "links": [
+      283
+     ]
+    }
+   ],
+   "title": "Int (Lightning LoRA)",
+   "properties": {
+    "Node name for S&R": "PrimitiveInt",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   },
+   "widgets_values": [
+    4,
+    "fixed"
+   ],
+   "widgets_values_named": {
+    "value": 4,
+    "fixed": "fixed"
+   }
+  },
+  {
+   "id": 145,
+   "type": "LoraLoaderModelOnly",
+   "pos": [
+    -1500,
+    5110
+   ],
+   "size": [
+    650,
+    90
+   ],
+   "flags": {},
+   "order": 21,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 285
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      286
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoraLoaderModelOnly",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "models": [
+     {
+      "name": "minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/loras/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors",
+      "directory": "loras"
+     }
+    ]
+   },
+   "widgets_values": [
+    "minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors",
+    1
+   ],
+   "widgets_values_named": {
+    "lora_name": "minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors",
+    "strength_model": 1
+   }
+  },
+  {
+   "id": 146,
+   "type": "PrimitiveBoolean",
+   "pos": [
+    -1480,
+    6210
+   ],
+   "size": [
+    270,
+    70
+   ],
+   "flags": {},
+   "order": 14,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "BOOLEAN",
+     "type": "BOOLEAN",
+     "links": [
+      290,
+      291
+     ]
+    }
+   ],
+   "title": "Boolean (Enable Lightning LoRA)",
+   "properties": {
+    "Node name for S&R": "PrimitiveBoolean",
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0"
+   },
+   "widgets_values": [
+    false
+   ],
+   "widgets_values_named": {
+    "value": false
+   },
+   "color": "#322",
+   "bgcolor": "#533"
+  },
+  {
+   "id": 172,
+   "type": "MiniMaxH3FunControlNetApply",
+   "pos": [
+    60,
+    5150
+   ],
+   "size": [
+    330,
+    210
+   ],
+   "flags": {},
+   "order": 31,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 340
+    },
+    {
+     "name": "model_patch",
+     "type": "MODEL_PATCH",
+     "link": 338
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 339
+    },
+    {
+     "name": "control_video",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 1776
+    },
+    {
+     "name": "mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "name": "source_video",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      341,
+      342
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "MiniMaxH3FunControlNetApply"
+   },
+   "widgets_values": [
+    1,
+    0,
+    1
+   ],
+   "widgets_values_named": {
+    "strength": 1,
+    "start_percent": 0,
+    "end_percent": 1
+   },
+   "color": "#322",
+   "bgcolor": "#533"
+  },
+  {
+   "id": 173,
+   "type": "ModelPatchLoader",
+   "pos": [
+    -1500,
+    5710
+   ],
+   "size": [
+    650,
+    90
+   ],
+   "flags": {},
+   "order": 15,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "MODEL_PATCH",
+     "type": "MODEL_PATCH",
+     "links": [
+      338
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ModelPatchLoader",
+    "models": [
+     {
+      "name": "minimax_h3_fun_controlnet_union_pruned_int8_convrot.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/model_patches/minimax_h3_fun_controlnet_union_pruned_int8_convrot.safetensors",
+      "directory": "model_patches"
+     }
+    ]
+   },
+   "widgets_values": [
+    "minimax_h3_fun_controlnet_union_pruned_int8_convrot.safetensors"
+   ],
+   "widgets_values_named": {
+    "name": "minimax_h3_fun_controlnet_union_pruned_int8_convrot.safetensors"
+   }
+  },
+  {
+   "id": 707,
+   "type": "SaveVideo",
+   "pos": [
+    1210,
+    4870
+   ],
+   "size": [
+    1430,
+    126
+   ],
+   "flags": {},
+   "order": 38,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "video",
+     "type": "VIDEO",
+     "link": 1767
+    }
+   ],
+   "outputs": [
+    {
+     "name": "video",
+     "type": "VIDEO",
+     "links": null
+    }
+   ],
+   "properties": {},
+   "widgets_values": [
+    "video/MiniMax_H3",
+    "auto",
+    "auto",
+    "auto"
+   ],
+   "widgets_values_named": {
+    "filename_prefix": "video/MiniMax_H3",
+    "format": "auto",
+    "format.codec": "auto",
+    "codec": "auto"
+   }
+  },
+  {
+   "id": 708,
+   "type": "MarkdownNote",
+   "pos": [
+    70,
+    5450
+   ],
+   "size": [
+    310,
+    210
+   ],
+   "flags": {},
+   "order": 17,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {},
+   "widgets_values": [
+    "Fun ControlNet: one checkpoint adds Canny / Depth / HED / MLSD / Pose control video plus inpainting to MiniMax H3.\n\nVideo length: 5-15s (frames snap to the 17n+5 grid at 24fps, e.g. 124 = 5s). Control videos longer than the target are trimmed to the first frames; shorter ones hold their last frame.\n\nWorks with both fl2va and ref2va model files. Keep guidance_scale = 1.0. Raise strength above 1 only if the control drifts."
+   ],
+   "widgets_values_named": {
+    "text": "Fun ControlNet: one checkpoint adds Canny / Depth / HED / MLSD / Pose control video plus inpainting to MiniMax H3.\n\nVideo length: 5-15s (frames snap to the 17n+5 grid at 24fps, e.g. 124 = 5s). Control videos longer than the target are trimmed to the first frames; shorter ones hold their last frame.\n\nWorks with both fl2va and ref2va model files. Keep guidance_scale = 1.0. Raise strength above 1 only if the control drifts."
+   },
+   "color": "#222",
+   "bgcolor": "#000"
+  },
+  {
+   "id": 718,
+   "type": "GreyboxRenderPack",
+   "pos": [
+    -1180,
+    5950
+   ],
+   "size": [
+    380,
+    330
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "pack",
+     "type": "GREYBOX_PACK",
+     "links": [
+      1773
+     ]
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      1777
+     ]
+    },
+    {
+     "name": "frames",
+     "type": "INT",
+     "links": [
+      1778
+     ]
+    },
+    {
+     "name": "fps",
+     "type": "FLOAT",
+     "links": []
+    },
+    {
+     "name": "width",
+     "type": "INT",
+     "links": [
+      1779
+     ]
+    },
+    {
+     "name": "height",
+     "type": "INT",
+     "links": [
+      1780
+     ]
+    },
+    {
+     "name": "info",
+     "type": "STRING",
+     "links": [
+      1774
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "GreyboxRenderPack"
+   },
+   "widgets_values": [
+    "shot.greybox.zip",
+    "MiniMax H3 (24 fps, 17n+5)",
+    0,
+    0,
+    0.0,
+    "",
+    ""
+   ],
+   "title": "Greybox Render Pack",
+   "color": "#3d2a33",
+   "bgcolor": "#5c3a4a"
+  },
+  {
+   "id": 719,
+   "type": "GreyboxPass",
+   "pos": [
+    -760,
+    5950
+   ],
+   "size": [
+    300,
+    110
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "pack",
+     "type": "GREYBOX_PACK",
+     "link": 1773
+    }
+   ],
+   "outputs": [
+    {
+     "name": "frames",
+     "type": "IMAGE",
+     "links": [
+      1775,
+      1776
+     ]
+    },
+    {
+     "name": "character_mask",
+     "type": "MASK",
+     "links": []
+    },
+    {
+     "name": "first_frame",
+     "type": "IMAGE",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "GreyboxPass"
+   },
+   "widgets_values": [
+    "depth"
+   ],
+   "title": "Greybox Pass (depth)",
+   "color": "#3d2a33",
+   "bgcolor": "#5c3a4a"
+  },
+  {
+   "id": 720,
+   "type": "PreviewAny",
+   "pos": [
+    -1180,
+    6320
+   ],
+   "size": [
+    380,
+    180
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "source",
+     "type": "*",
+     "link": 1774
+    }
+   ],
+   "outputs": [
+    {
+     "name": "STRING",
+     "type": "STRING",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "PreviewAny"
+   },
+   "widgets_values": [],
+   "title": "Pack info"
+  },
+  {
+   "id": 721,
+   "type": "PreviewImage",
+   "pos": [
+    -760,
+    6100
+   ],
+   "size": [
+    300,
+    260
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 1775
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   },
+   "widgets_values": [],
+   "title": "Control video"
+  },
+  {
+   "id": 722,
+   "type": "LoadImage",
+   "pos": [
+    -1360,
+    4470
+   ],
+   "size": [
+    310,
+    340
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      1781
+     ]
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImage"
+   },
+   "widgets_values": [
+    "example.png",
+    "image"
+   ],
+   "title": "Picture 1 (reference image 1)"
+  },
+  {
+   "id": 723,
+   "type": "LoadImage",
+   "pos": [
+    -1030,
+    4470
+   ],
+   "size": [
+    310,
+    340
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      1782
+     ]
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImage"
+   },
+   "widgets_values": [
+    "example.png",
+    "image"
+   ],
+   "title": "Picture 2 (reference image 2)"
+  },
+  {
+   "id": 724,
+   "type": "MarkdownNote",
+   "pos": [
+    -1180,
+    5530
+   ],
+   "size": [
+    720,
+    380
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "## Greybox -> MiniMax H3\n\n1. Export a render pack from the Greybox editor and put the zip in `ComfyUI/input` (or `input/greybox`). Pick it in **Greybox Render Pack**.\n2. Load your reference images in the order you declared them in the editor (they are `<Picture 1>`, `<Picture 2>` in the prompt). **Pack info** lists that order.\n3. **Greybox Pass** feeds the Fun ControlNet. `depth` holds camera, layout and silhouettes; switch it to `pose` when the performance matters more than the set.\n4. Duration, size and prompt come from the pack. Type into `prompt_override` on the Render Pack to replace the prompt.\n\nMemory: defaults are sized for a 24 GB GPU (960 px long side). Raise `long_side` toward 1344 on larger cards.\n\nLicense: MiniMax H3 open weights are under the MiniMax H3 Community License, whose territory clause excludes the US, EU, UK and South Korea. Check it before you use the weights."
+   ],
+   "title": "Greybox"
+  }
+ ],
+ "links": [
+  [
+   250,
+   120,
+   0,
+   121,
+   1,
+   "VAE"
+  ],
+  [
+   251,
+   119,
+   0,
+   122,
+   1,
+   "VAE"
+  ],
+  [
+   253,
+   129,
+   0,
+   125,
+   0,
+   "NOISE"
+  ],
+  [
+   254,
+   126,
+   0,
+   125,
+   1,
+   "GUIDER"
+  ],
+  [
+   255,
+   123,
+   0,
+   125,
+   2,
+   "SAMPLER"
+  ],
+  [
+   256,
+   124,
+   0,
+   125,
+   3,
+   "SIGMAS"
+  ],
+  [
+   258,
+   122,
+   0,
+   130,
+   0,
+   "IMAGE"
+  ],
+  [
+   259,
+   121,
+   0,
+   130,
+   1,
+   "AUDIO"
+  ],
+  [
+   271,
+   136,
+   1,
+   125,
+   4,
+   "LATENT"
+  ],
+  [
+   272,
+   128,
+   0,
+   136,
+   0,
+   "CLIP"
+  ],
+  [
+   273,
+   119,
+   0,
+   136,
+   1,
+   "VAE"
+  ],
+  [
+   274,
+   120,
+   0,
+   136,
+   2,
+   "VAE"
+  ],
+  [
+   280,
+   125,
+   0,
+   122,
+   0,
+   "LATENT"
+  ],
+  [
+   281,
+   125,
+   0,
+   121,
+   0,
+   "LATENT"
+  ],
+  [
+   283,
+   144,
+   0,
+   142,
+   1,
+   "INT"
+  ],
+  [
+   284,
+   143,
+   0,
+   142,
+   0,
+   "INT"
+  ],
+  [
+   285,
+   127,
+   0,
+   145,
+   0,
+   "MODEL"
+  ],
+  [
+   286,
+   145,
+   0,
+   141,
+   1,
+   "MODEL"
+  ],
+  [
+   287,
+   127,
+   0,
+   141,
+   0,
+   "MODEL"
+  ],
+  [
+   289,
+   142,
+   0,
+   124,
+   1,
+   "INT"
+  ],
+  [
+   290,
+   146,
+   0,
+   141,
+   2,
+   "BOOLEAN"
+  ],
+  [
+   291,
+   146,
+   0,
+   142,
+   2,
+   "BOOLEAN"
+  ],
+  [
+   337,
+   136,
+   0,
+   126,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   338,
+   173,
+   0,
+   172,
+   1,
+   "MODEL_PATCH"
+  ],
+  [
+   339,
+   119,
+   0,
+   172,
+   2,
+   "VAE"
+  ],
+  [
+   340,
+   141,
+   0,
+   172,
+   0,
+   "MODEL"
+  ],
+  [
+   341,
+   172,
+   0,
+   124,
+   0,
+   "MODEL"
+  ],
+  [
+   342,
+   172,
+   0,
+   126,
+   0,
+   "MODEL"
+  ],
+  [
+   1767,
+   130,
+   0,
+   707,
+   0,
+   "VIDEO"
+  ],
+  [
+   1773,
+   718,
+   0,
+   719,
+   0,
+   "GREYBOX_PACK"
+  ],
+  [
+   1774,
+   718,
+   6,
+   720,
+   0,
+   "STRING"
+  ],
+  [
+   1775,
+   719,
+   0,
+   721,
+   0,
+   "IMAGE"
+  ],
+  [
+   1776,
+   719,
+   0,
+   172,
+   3,
+   "IMAGE"
+  ],
+  [
+   1777,
+   718,
+   1,
+   136,
+   7,
+   "STRING"
+  ],
+  [
+   1778,
+   718,
+   2,
+   136,
+   10,
+   "INT"
+  ],
+  [
+   1779,
+   718,
+   4,
+   136,
+   8,
+   "INT"
+  ],
+  [
+   1780,
+   718,
+   5,
+   136,
+   9,
+   "INT"
+  ],
+  [
+   1781,
+   722,
+   0,
+   136,
+   3,
+   "IMAGE"
+  ],
+  [
+   1782,
+   723,
+   0,
+   136,
+   11,
+   "IMAGE"
+  ]
+ ],
+ "groups": [
+  {
+   "id": 1,
+   "title": "Models",
+   "bounding": [
+    -1520,
+    4840,
+    700,
+    990
+   ],
+   "color": "#3f789e",
+   "flags": {}
+  },
+  {
+   "id": 2,
+   "title": "Sampling",
+   "bounding": [
+    480,
+    4830,
+    690,
+    700
+   ],
+   "color": "#3f789e",
+   "flags": {}
+  },
+  {
+   "id": 3,
+   "title": "Switch Model and Settings",
+   "bounding": [
+    -790,
+    5340,
+    730,
+    490
+   ],
+   "color": "#3f789e",
+   "flags": {}
+  },
+  {
+   "id": 4,
+   "title": "Decoding and create video",
+   "bounding": [
+    480,
+    5560,
+    690,
+    270
+   ],
+   "color": "#3f789e",
+   "flags": {}
+  },
+  {
+   "id": 5,
+   "title": "User Inputs",
+   "bounding": [
+    -1520,
+    5860,
+    2690,
+    1020
+   ],
+   "color": "#3f789e",
+   "flags": {}
+  },
+  {
+   "id": 6,
+   "title": "Conditioning",
+   "bounding": [
+    -790,
+    4840,
+    730,
+    480
+   ],
+   "color": "#3f789e",
+   "flags": {}
+  },
+  {
+   "id": 7,
+   "title": "Apply Fun ControlNet",
+   "bounding": [
+    -30,
+    4840,
+    490,
+    990
+   ],
+   "color": "#3f789e",
+   "flags": {}
+  },
+  {
+   "id": 8,
+   "title": "Video Settings",
+   "bounding": [
+    -1490,
+    5910,
+    290,
+    720
+   ],
+   "color": "#3f789e",
+   "flags": {}
+  },
+  {
+   "id": 9,
+   "title": "Select and Ctrl‑B to enable",
+   "bounding": [
+    -750,
+    6120,
+    290,
+    340
+   ],
+   "color": "#3f789e",
+   "flags": {}
+  }
+ ],
+ "definitions": {
+  "subgraphs": []
+ },
+ "config": {},
+ "extra": {
+  "ds": {
+   "scale": 0.2420095403823657,
+   "offset": [
+    3653.0417594228675,
+    -4369.381097166231
+   ]
+  },
+  "frontendVersion": "1.51.9",
+  "VHS_latentpreview": false,
+  "VHS_latentpreviewrate": 0,
+  "VHS_MetadataImage": true,
+  "VHS_KeepIntermediate": true,
+  "greybox": {
+   "title": "Greybox -> MiniMax H3 (depth control + references)",
+   "built_from": "Comfy-Org/workflow_templates (MIT)"
+  }
+ },
+ "version": 0.4
+}

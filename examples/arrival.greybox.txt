@@ -1,0 +1,15 @@
+# Arrival: A car pulls up under a street lamp while the camera cranes down to meet the driver.
+# Open with File > Open project or script in the editor.
+name "Arrival"
+duration 8
+look "rainy night, a single street lamp, neo-noir, high contrast"
+audio "rain, an engine idling then switching off, a car door"
+add plane lot size=30,0.01,30 desc="an empty parking lot"
+add lamp lamp1 at=2.5,0,0 yaw=-90
+add car car1 at=-14,0,0 yaw=90 desc="a dark 1980s coupe"
+key car1 pos t=0 -14,0,0 ; t=5 0,0,0 e=out
+add mannequin driver at=0.6,0,1.5 desc="a woman in a leather jacket" pose=stand look=cam
+cam cam1 lens=32
+macro crane cam=cam1 target=car1 from=6 to=1.4 dist=8 angle=30 t0=0 t1=8
+ref 1 car1 "the car"
+ref 2 driver "the woman"

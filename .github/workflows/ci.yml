@@ -1,0 +1,34 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  editor:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: editor
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: editor/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+  comfyui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install numpy pillow
+      - name: Node timing logic
+        working-directory: comfyui/comfyui-greybox
+        run: python test_nodes.py
+      - name: Workflows rebuild cleanly
+        working-directory: comfyui/tools
+        run: |
+          python build_workflows.py
+          git diff --exit-code -- ../comfyui-greybox/example_workflows

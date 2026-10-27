@@ -1,0 +1,24 @@
+Greybox Studio
+Copyright 2026 the Greybox Studio authors
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This project includes or depends on the following third-party software:
+
+- three.js (MIT License) - 3D rendering in the editor. https://github.com/mrdoob/three.js
+- fflate (MIT License) - zip writing for render packs. https://github.com/101arrowz/fflate
+- Mediabunny (Mozilla Public License 2.0) - MP4 muxing of the preview clip. Used unmodified as an
+  npm dependency; its source is available at https://github.com/Vanilagy/mediabunny
+- Vite (MIT License) - development server and build. https://vitejs.dev
+- Barlow Semi Condensed and IBM Plex Mono fonts (SIL Open Font License 1.1), bundled through
+  @fontsource packages.
+
+The example ComfyUI workflows in comfyui/comfyui-greybox/example_workflows are derived from
+Comfy-Org/workflow_templates (MIT License, Copyright (c) 2023-present Comfy Org). The original
+templates are kept in comfyui/tools/official together with their licence and source commit.
+
+The OpenPose BODY_18 keypoint order and colours follow the convention used by ControlNet and
+controlnet_aux so that existing pose-conditioned models read the pose pass correctly.
+
+No model weights are distributed with this project. Wan, LTX-2 and MiniMax H3 weights are licensed
+by their authors under their own terms; see docs/backends.md.

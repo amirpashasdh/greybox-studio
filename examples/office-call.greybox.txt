@@ -1,0 +1,15 @@
+# Office call: A man paces while on the phone; slow push from a full shot to a close-up.
+# Open with File > Open project or script in the editor.
+name "Office call"
+duration 10
+look "late afternoon office, warm low sun through blinds, shallow depth of field, 35mm film"
+audio "muffled city outside, one side of a tense phone call"
+macro room id=office w=6 d=7 h=3 door=back
+add table desk at=0,0,-1.8 desc="a cluttered wooden desk" parent=office
+add chair chair1 at=0,0,-2.6 parent=office desc="an office chair"
+add window win at=-2.9,1,0 yaw=90 parent=office desc="a tall window with half-closed blinds"
+add mannequin man at=-1.2,0,0 yaw=90 desc="a man in his 50s in shirtsleeves holding a phone to his ear" pose=talk
+macro walk who=man path=1.2,0.4|0.2,-0.6 t0=1 t1=7 end=talk
+cam cam1 lens=28
+macro push cam=cam1 target=man from=full to=closeup angle=20 t0=0 t1=10 e=inout
+ref 1 man "the man's face and clothes"

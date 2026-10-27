@@ -1,0 +1,20 @@
+# Subway verse: One continuous 360-degree orbit; the performer turns his head to keep eyes on the lens.
+# Open with File > Open project or script in the editor.
+name "Subway verse"
+duration 8
+fps 24
+size 1280x720
+look "night, an empty moving subway car, cool fluorescent light, photoreal, clean digital image"
+audio "train rumble and rail clacks under one voice rapping slowly, no music"
+add box car.floor size=3,0.02,14 desc="the subway car floor" role=set
+add box car.benchL at=-1.25,0,0 size=0.5,0.45,9 desc="a moulded plastic bench seat"
+add box car.benchR at=1.25,0,0 size=0.5,0.45,9 desc="a moulded plastic bench seat"
+add box car.wallL at=-1.55,0,0 size=0.1,2.3,14 desc="the car wall with black windows" role=set
+add box car.wallR at=1.55,0,0 size=0.1,2.3,14 desc="the car wall with black windows" role=set
+add cylinder pole1 at=-0.65,0,1.1 size=0.05,2.3,0.05 desc="a steel grab pole"
+add cylinder pole2 at=0.65,0,-1.4 size=0.05,2.3,0.05 desc="a steel grab pole"
+add mannequin rapper desc="a hooded young rapper in layered streetwear" pose=talk look=cam
+set cam1 lens=35
+macro orbit cam=cam1 target=rapper size=mcu from=30 to=390 t0=0 t1=8 e=linear
+ref 1 rapper "face, hood and full outfit"
+ref 2 location "empty subway car interior"
