@@ -7,7 +7,7 @@ requires-python = ">=3.10"
 dependencies = []
 
 [project.urls]
-Repository = "https://github.com/YOUR_GITHUB_USER/greybox-studio"
+Repository = "https://github.com/amirpashasdh/greybox-studio"
 
 [tool.comfy]
 PublisherId = ""
